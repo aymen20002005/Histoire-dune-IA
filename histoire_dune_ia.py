@@ -140,4 +140,92 @@ class HistoireDuneIA:
             print(f"Erreur lors de la génération du chapitre {numero_chapitre}: {e}")
             return None
         
-    def sauvegarder_livre()
+    def sauvegarder_livre(self, plan, chapitres_contenu):
+        time_stamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        dossier_livre = Path(f"livre_histoire_ia_{time_stamp}")
+        dossier_livre.mkdir(exist_ok=True)
+
+        with open(dossier_livre / "plan.json", "w", encoding="utf-8") as f:
+            json.dump(plan, f, ensure_ascii=False, indent=2)
+
+        livre_complet = []
+        livre_complet.append(f"# {self.livre_titre}\n")
+        livre_complet.append(f"{plan['resume_global']}\n\n")
+
+        for i, chapitre_info in enumerate(self.chapitres):
+            if i < len(chapitres_contenu)  and chapitres_contenu[i]:
+                livre_complet.append(f"## Chapitre {chapitre_info['numero']}: {chapitre_info['titre']}\n\n")
+                livre_complet.append(f"{chapitres_contenu[i]}\n\n")
+
+        with open(dossier_livre / "histoire_dune_ia_complet.md", "w", encoding="utf-8") as f:
+            f.write("".join(livre_complet))
+
+        with open(dossier_livre / "histoire_dune_ia_complet.txt", "w", encoding="utf-8") as f:
+            f.write("".join(livre_complet))
+
+        self.generer_word(dossier_livre, plan, chapitres_contenu)
+
+        chapitres_dir = dossier_livre / "chapitres"
+        chapitres_dir.mkdir(exist_ok=True)
+        for i, chapitre_info in enumerate(self.chapitres):
+            if i < len(chapitres_contenu) and chapitres_contenu[i]:
+                nom_fichier = f"chapitre_{chapitre_info['numero']:02d}_{chapitre_info['titre'].replace(' ', '_').replace(':', '').replace('?','').replace('!','')}.md"
+                with open(chapitres_dir / nom_fichier, "w", encoding="utf-8") as f:
+                    f.write(f"# Chapitre {chapitre_info['numero']}: {chapitre_info['titre']}\n\n")
+                    f.write(chapitres_contenu[i])
+
+        print(f"Livre sauvegardé dans le dossier: {dossier_livre.absolute()}")
+        return dossier_livre
+    
+    def generer_word(self, dossier_livre, plan, chapitres_contenu):
+        try:
+            print("Génération du document Word...")
+            doc = Document()
+
+            title = doc.add_paragraph(self.livre_titre)
+            title.alignment = WD_ALIGN_PARAGRAPH.CENTER
+            title.runs[0].font.size = Inches(0.5)
+            title.runs[0].bold = True
+
+            doc.add_page_break()
+
+            resume_para = doc.add_paragraph("Résumé")
+            resume_para.runs[0].bold = True
+            resume_para.runs[0].font.size = Inches(0.3)
+
+            doc.add_paragraph(plan['resume_global'])
+            doc.add_page_break()
+
+            toc_title = doc.add_paragraph("Table des matières")
+            toc_title.runs[0].bold = True
+            toc_title.runs[0].font.size = Inches(0.3)
+
+            for chapitre_info in self.chapitres:
+                toc_entry = doc.add_paragraph(f"Chapitre {chapitre_info['numero']}: {chapitre_info['titre']}")
+                toc_entry.style = 'List Number'
+
+            doc.add_page_break()
+
+            for i, chapitre_info in enumerate(self.chapitres):
+                if i < len(chapitres_contenu) and chapitres_contenu[i]:
+                    chapitre_titre = doc.add_paragraph(f"Chapitre {chapitre_info['numero']}: {chapitre_info['titre']}")
+                    chapitre_titre.runs[0].bold = True
+                    chapitre_titre.runs[0].font.size = Inches(0.25)
+                    chapitre_titre.alignment = WD_ALIGN_PARAGRAPH.LEFT
+
+                    paragraphes = chapitres_contenu[i].split('\n\n')
+                    for paragraphe in paragraphes:
+                        if paragraphe.strip():
+                            doc.add_paragraph(paragraphe.strip())
+
+                    if i < len(self.chapitres) -1:
+                        doc.add_page_break()
+            
+            chemin_word = dossier_livre / "histoire_dune_ia_complet.docx"
+            doc.save(str(chemin_word))
+            print(f"Fichier Word créé: {chemin_word.absolute()}")
+
+        except Exception as e:
+            print(f"Erreur: {e}")
+
+        
