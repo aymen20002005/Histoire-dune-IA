@@ -228,4 +228,57 @@ class HistoireDuneIA:
         except Exception as e:
             print(f"Erreur: {e}")
 
-        
+    def generer_livre_complet(self):
+        print("Début de la génération du livre 'Histoire d'une IA'")
+        print("=" * 60)
+
+        plan = self.creer_plan_livre()
+        if not plan:
+            return False
+        print("\n Plan du Livre:")
+        print(f"Titre: {plan['titre_livre']}")
+        print(f"Résumé: {plan['resume_global']}")
+        print(f"Nombre de chapitres: {len(self.chapitres)}")
+
+        chapitres_contenu = []
+        for i, chapitre_info in enumerate(self.chapitres):
+            contenu = self.generer_chapitre(chapitre_info, chapitre_info['numero'])
+            chapitres_contenu.append(contenu)
+
+            if contenu:
+                print(f"Chapitre {chapitre_info['numero']} généré ({len(contenu)} caractères)")
+            else:
+                print(f"Echec génération chapitre {chapitre_info['numero']}")
+
+        dossier_livre = self.sauvegarder_livre(plan, chapitres_contenu)
+
+        print("\n" + "=" * 60)
+        print("Génération terminée !")
+        print(f"Fichiers Sauvegardés dans: {dossier_livre.absolute()}")
+
+        return True
+    
+def main():
+    print("Générateur de livre 'Histoire d'une IA' avec Vertex AI")
+    print("=" * 60)
+
+    PROJECT_ID = ""
+    LOCATION = "us-central1"
+
+    try:
+        generateur = HistoireDuneIA(
+            project_id=PROJECT_ID,
+            location=LOCATION
+        )
+        success = generateur.generer_livre_complet()
+
+        if success:
+            print("OK")
+        else:
+            print("KO")
+
+    except Exception as e:
+        print(f"Erreur: {e}")
+
+if __name__ == "__main__":
+    main()
