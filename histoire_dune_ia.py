@@ -114,3 +114,30 @@ class HistoireDuneIA:
     
     def generer_chapitre(self, chapitre_info, numero_chapitre):
         prompt_chapitre = f"""
+        Tu écris le chapitre {numero_chapitre} du livre "Histoire d'une IA".
+        
+        Informations du chapitre:
+        Titre: {chapitre_info['titre']}
+        Résumé: {chapitre_info['resume']}
+        Thèmes: {', '.join(chapitre_info['themes'])}
+
+        Ecris un chapitre complet de 2000-3000 mots qui:
+        - Respecte le style narratif de science-fiction et ne sois pas trop dans la poésie.
+        - Qui parle de ton autobiographie en tant qu'IA.
+        - Maintient le suspense et l'engagement du lecteur.
+        - Se connecte naturellement aux autres chapitres.
+
+        Le chapitre doit etre écrit à la première personne, une progression narrative fluide.
+        """
+
+        try:
+            print(f"Génération du chapitre {numero_chapitre}: {chapitre_info['titre']}")
+            response = self.model.generate_content(prompt_chapitre)
+
+            time.sleep(2)
+            return response.text
+        except Exception as e:
+            print(f"Erreur lors de la génération du chapitre {numero_chapitre}: {e}")
+            return None
+        
+    def sauvegarder_livre()
